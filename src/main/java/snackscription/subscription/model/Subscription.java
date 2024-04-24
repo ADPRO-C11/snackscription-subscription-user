@@ -1,6 +1,6 @@
 package snackscription.subscription.model;
 
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import snackscription.subscription.enums.SubscriptionStatus;
@@ -8,15 +8,31 @@ import snackscription.subscription.enums.SubscriptionStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
 @Getter
 @Setter
+@Table(name = "subscription")
 public class Subscription {
+    @Id
     String id;
+
+    @Column(name = "unique_code", nullable = false, unique = true)
     String uniqueCode;
+
+    @Column(name = "user_id", nullable = false)
     String userId;
+
+    @Column(name = "subscription_box_id", nullable = false)
     String subscriptionBoxId;
+
+    @Embedded
+    @Column(name = "shipping_address", nullable = false)
     ShippingAddress shippingAddress;
+
+    @Column(name = "status", nullable = false)
     String status;
+
+    @Column(name = "dateCreated", nullable = false)
     LocalDateTime dateCreated;
 
     public Subscription(){
