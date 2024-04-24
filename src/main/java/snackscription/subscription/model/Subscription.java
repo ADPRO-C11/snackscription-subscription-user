@@ -1,5 +1,6 @@
 package snackscription.subscription.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,4 +16,12 @@ public class Subscription {
     ShippingAddress shippingAddress;
     String status;
     LocalDateTime dateCreated;
+
+    public Subscription(){
+
+    }
+
+    public Subscription(String uniqueCode, String userId, String subscriptionBoxId, ShippingAddress shippingAddress, String status){
+
+    }
 }
