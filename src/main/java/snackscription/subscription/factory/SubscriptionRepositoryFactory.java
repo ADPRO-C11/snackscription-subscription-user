@@ -6,11 +6,11 @@ import snackscription.subscription.repository.SubscriptionRepository;
 public class SubscriptionRepositoryFactory implements Factory<SubscriptionRepository> {
     @Override
     public SubscriptionRepository create(){
-        return null;
+        return new SubscriptionRepository();
     }
 
     @Override
     public SubscriptionRepository create(String uniqueCode, String userId, String subscriptionBoxId, ShippingAddress shippingAddress, String status){
-        return null;
+        throw new UnsupportedOperationException();
     }
 }
