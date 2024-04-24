@@ -11,6 +11,6 @@ ENV JDBC_DATABASE_USERNAME ${JDBC_DATABASE_USERNAME}
 
 WORKDIR /app
 RUN ls -al
-COPY ./subscription-0.0.1.jar /app
+COPY ./snackscription-0.0.1-SNAPSHOT.jar /app
 EXPOSE 8080
-CMD ["java","-jar","subscription-0.0.1.jar"]
+CMD ["java","-jar","snackscription-0.0.1-SNAPSHOT.jar"]
