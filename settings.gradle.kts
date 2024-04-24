@@ -1,1 +1,1 @@
-rootProject.name = "snackscription"
+rootProject.name = "subscription"
