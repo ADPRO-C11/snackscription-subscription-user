@@ -73,6 +73,14 @@ class SubscriptionTest {
     }
 
     @Test
+    void testCreateInvalidSubscription() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Subscription subscription = new Subscription("SJW-12345678910",
+                    this.subscription.getUserId(), this.subscription.getSubscriptionBoxId(), this.subscription.getShippingAddress(), this.subscription.getStatus());
+        });
+    }
+
+    @Test
     void testSetInvalidStatus(){
         assertThrows(IllegalArgumentException.class, () -> subscription.setStatus("MEOW"));
     }
