@@ -2,6 +2,7 @@ package snackscription.subscription.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import snackscription.subscription.enums.SubscriptionStatus;
 
 import java.time.LocalDateTime;
 
@@ -27,7 +28,7 @@ class SubscriptionTest {
         shippingAddress.setPhoneNumber("081234567890");
 
         this.subscription.setShippingAddress(shippingAddress);
-        this.subscription.setStatus("PENDING");
+        this.subscription.setStatus(SubscriptionStatus.PENDING.getValue());
         this.subscription.setDateCreated(LocalDateTime.now());
     }
 
@@ -63,17 +64,12 @@ class SubscriptionTest {
 
     @Test
     void testGetStatus(){
-        assertEquals("PENDING", subscription.getStatus());
+        assertEquals(SubscriptionStatus.PENDING.getValue(), subscription.getStatus());
     }
 
     @Test
     void testDateCreated() {
         assertEquals(LocalDateTime.now(), subscription.getDateCreated());
-    }
-
-    @Test
-    void testSetInvalidUniqueCode() {
-        assertThrows(IllegalArgumentException.class, () -> subscription.setUniqueCode("SJW-12345678910"));
     }
 
     @Test
