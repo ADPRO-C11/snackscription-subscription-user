@@ -4,6 +4,5 @@ import snackscription.subscription.model.ShippingAddress;
 
 public interface Factory <T> {
     T create();
-
-    T create(String uniqueCode, String userId, String subscriptionBoxId, ShippingAddress shippingAddress, String status);
+    T create(String type, String userId, String subscriptionBoxId, ShippingAddress shippingAddress);
 }

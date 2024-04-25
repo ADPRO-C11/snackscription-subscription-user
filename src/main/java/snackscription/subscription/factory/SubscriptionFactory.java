@@ -9,7 +9,7 @@ public class SubscriptionFactory implements Factory<Subscription> {
         return new Subscription();
     }
 
-    public Subscription create(String uniqueCode, String userId, String subscriptionBoxId, ShippingAddress shippingAddress, String status){
-        return new Subscription(uniqueCode, userId, subscriptionBoxId, shippingAddress, status);
+    public Subscription create(String type, String userId, String subscriptionBoxId, ShippingAddress shippingAddress){
+        return new Subscription(type, userId, subscriptionBoxId, shippingAddress);
     }
 }
