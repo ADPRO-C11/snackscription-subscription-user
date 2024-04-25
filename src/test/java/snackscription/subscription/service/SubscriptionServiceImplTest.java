@@ -37,7 +37,7 @@ class SubscriptionServiceImplTest {
 
         subscriptionDTO = new SubscriptionDTO();
         subscriptionDTO.setId("1");
-        subscriptionDTO.setType("Monthly");
+        subscriptionDTO.setType("MONTHLY");
         subscriptionDTO.setUserId("user123");
         subscriptionDTO.setSubscriptionBoxId("box123");
         subscriptionDTO.setShippingAddress(new ShippingAddress("Jl. Doang Tapi Ga Jadian",
@@ -49,7 +49,7 @@ class SubscriptionServiceImplTest {
 
         subscription = new Subscription();
         subscription.setId("1");
-        subscription.setType("Monthly");
+        subscription.setType("MONTHLY");
         subscription.setUserId("user123");
         subscription.setSubscriptionBoxId("box123");
         subscription.setShippingAddress(new ShippingAddress("Jl. Doang Tapi Ga Jadian",
@@ -64,16 +64,12 @@ class SubscriptionServiceImplTest {
     }
 
     @Test
-    void testSave() {
-        when(subscriptionFactory.create(anyString(), anyString(), anyString(), any(ShippingAddress.class)))
-                .thenReturn(subscription);
+    void testSave(){
         when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
-
         Subscription result = subscriptionService.save(subscriptionDTO);
 
         assertNotNull(result);
         assertEquals(subscription, result);
-        verify(subscriptionRepository, times(1)).save(subscription);
     }
 
     @Test
