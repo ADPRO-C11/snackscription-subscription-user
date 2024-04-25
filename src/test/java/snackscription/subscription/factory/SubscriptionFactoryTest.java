@@ -28,18 +28,15 @@ class SubscriptionFactoryTest {
         shippingAddress.setPhoneNumber("081234567890");
 
         Subscription subscription = subscriptionFactory.create(
-                "MTH-12345678910",
+                "MONTHLY",
                 "12345678910",
                 "12345678910",
-                shippingAddress,
-                SubscriptionStatus.PENDING.getValue()
+                shippingAddress
         );
         assertNotNull(subscription.getId());
-        assertEquals("MTH-12345678910", subscription.getUniqueCode());
         assertEquals("12345678910", subscription.getUserId());
         assertEquals("12345678910", subscription.getSubscriptionBoxId());
         assertEquals(SubscriptionStatus.PENDING.getValue(), subscription.getStatus());
-
         ShippingAddress subscriptionShippingAddress = subscription.getShippingAddress();
         assertEquals("Jl. Doang Tapi Ga Jadian", subscriptionShippingAddress.getAddress());
         assertEquals("Jakarta Selatan", subscriptionShippingAddress.getCity());
