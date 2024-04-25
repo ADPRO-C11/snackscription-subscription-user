@@ -31,7 +31,7 @@ class SubscriptionRepositoryTest {
 
     @Test
     void testSave() {
-        Subscription subscription = subscriptionFactory.create("Monthly", "userId", "boxId", new ShippingAddress());
+        Subscription subscription = subscriptionFactory.create("MONTHLY", "userId", "boxId", new ShippingAddress());
         Subscription savedSubscription = subscriptionRepository.save(subscription);
         assertEquals(subscription, savedSubscription);
         verify(entityManager, times(1)).persist(subscription);
