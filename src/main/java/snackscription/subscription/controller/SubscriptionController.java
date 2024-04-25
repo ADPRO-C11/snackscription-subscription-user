@@ -21,26 +21,27 @@ public class SubscriptionController {
 
     @PostMapping("/create")
     public ResponseEntity<Subscription> create(@RequestBody SubscriptionDTO subscriptionDTO){
-        return null;
+        return new ResponseEntity<>(subscriptionService.save(subscriptionDTO), HttpStatus.CREATED);
     }
 
     @GetMapping("/list")
     public ResponseEntity<List<SubscriptionDTO>> findAll(){
-        return null;
+        return new ResponseEntity<>(subscriptionService.findAll(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SubscriptionDTO> findById(@PathVariable String id){
-        return null;
+        return new ResponseEntity<>(subscriptionService.findById(id), HttpStatus.OK);
     }
 
     @PatchMapping("/update")
     public ResponseEntity<Subscription> update(@RequestBody SubscriptionDTO subscriptionDTO){
-        return null;
+        return new ResponseEntity<>(subscriptionService.update(subscriptionDTO), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable String id){
-        return null;
+        subscriptionService.delete(id);
+        return new ResponseEntity<>("DELETE SUCCESS", HttpStatus.OK);
     }
 }
