@@ -26,13 +26,7 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Replace placeholders in application.properties
-        run: |
-          sed -i "s|\${JDBC_DATABASE_URL}|${{ secrets.JDBC_DATABASE_URL }}|g" src/main/resources/application-prod.properties
-          sed -i "s|\${JDBC_DATABASE_USERNAME}|${{ secrets.JDBC_DATABASE_USERNAME }}|g" src/main/resources/application-prod.properties
-          sed -i "s|\${JDBC_DATABASE_PASSWORD}|${{ secrets.JDBC_DATABASE_PASSWORD }}|g" src/main/resources/application-prod.properties
+            ${{ runner.os }}-gradle-          
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -82,6 +76,9 @@ jobs:
 
       - name: Test with Gradle
         run: |
+          sed -i "s|\${JDBC_DATABASE_URL}|${{ secrets.JDBC_DATABASE_URL }}|g" src/main/resources/application-prod.properties
+          sed -i "s|\${JDBC_DATABASE_USERNAME}|${{ secrets.JDBC_DATABASE_USERNAME }}|g" src/main/resources/application-prod.properties
+          sed -i "s|\${JDBC_DATABASE_PASSWORD}|${{ secrets.JDBC_DATABASE_PASSWORD }}|g" src/main/resources/application-prod.properties
           ./gradlew check --info --stacktrace
           ./gradlew test
           ./gradlew jacocoTestReport
