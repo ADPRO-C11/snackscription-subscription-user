@@ -27,6 +27,13 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
+      - name: Replace placeholders in application.properties
+        run: |
+          sed -i "s|\${JDBC_DATABASE_URL}|${{ secrets.JDBC_DATABASE_URL }}|g" src/main/resources/application-prod.properties
+          sed -i "s|\${JDBC_DATABASE_USERNAME}|${{ secrets.JDBC_DATABASE_USERNAME }}|g" src/main/resources/application-prod.properties
+          sed -i "s|\${JDBC_DATABASE_PASSWORD}|${{ secrets.JDBC_DATABASE_PASSWORD }}|g" src/main/resources/application-prod.properties
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build with Gradle
