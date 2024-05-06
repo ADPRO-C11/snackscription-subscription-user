@@ -105,6 +105,13 @@ class SubscriptionServiceImplTest {
     }
 
     @Test
+    void testFindByIdNullId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            subscriptionService.findById(null);
+        });
+    }
+
+    @Test
     void testUpdate() {
         subscriptionDTO.setStatus("SUBSCRIBED");
 
@@ -130,6 +137,13 @@ class SubscriptionServiceImplTest {
     }
 
     @Test
+    void testUpdateNullSubscriptionDTO() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            subscriptionService.update(null);
+        });
+    }
+
+    @Test
     void testDelete() {
         String id = "1";
 
@@ -138,6 +152,13 @@ class SubscriptionServiceImplTest {
         subscriptionService.delete(id);
 
         verify(subscriptionRepository, times(1)).delete(id);
+    }
+
+    @Test
+    void testDeleteNullId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            subscriptionService.delete(null);
+        });
     }
 
     @Test
