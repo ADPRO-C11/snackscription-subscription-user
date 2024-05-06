@@ -81,6 +81,24 @@ class SubscriptionTest {
     }
 
     @Test
+    void testSetUniqueCodeMonthly() {
+        subscription.setUniqueCode("MONTHLY");
+        assertEquals("MTH-", subscription.getUniqueCode().substring(0, 4));
+    }
+
+    @Test
+    void testSetUniqueCodeQuarterly() {
+        subscription.setUniqueCode("QUARTERLY");
+        assertEquals("QTR-", subscription.getUniqueCode().substring(0, 4));
+    }
+
+    @Test
+    void testSetUniqueCodeSemiAnnual() {
+        subscription.setUniqueCode("SEMI-ANNUAL");
+        assertEquals("SAA-", subscription.getUniqueCode().substring(0, 4));
+    }
+
+    @Test
     void testSetInvalidStatus(){
         assertThrows(IllegalArgumentException.class, () -> subscription.setStatus("MEOW"));
     }
