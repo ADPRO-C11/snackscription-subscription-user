@@ -1,6 +1,5 @@
 package snackscription.subscription.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import snackscription.subscription.dto.SubscriptionDTO;
@@ -9,6 +8,7 @@ import snackscription.subscription.service.SubscriptionService;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/subscription")
@@ -17,79 +17,64 @@ public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
 
-    public SubscriptionController (SubscriptionService subscriptionService) {
+    public SubscriptionController(SubscriptionService subscriptionService) {
         this.subscriptionService = subscriptionService;
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Subscription> create(@RequestBody SubscriptionDTO subscriptionDTO){
-        Subscription subscription;
-        try {
-            subscription = subscriptionService.save(subscriptionDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(subscription);
+    public CompletableFuture<ResponseEntity<Subscription>> create(@RequestBody SubscriptionDTO subscriptionDTO) {
+        return subscriptionService.save(subscriptionDTO)
+                .thenApply(ResponseEntity::ok)
+                .exceptionally(ex -> ResponseEntity.badRequest().build());
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<SubscriptionDTO>> findAll(){
-        return new ResponseEntity<>(subscriptionService.findAll(), HttpStatus.OK);
+    public CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> findAll() {
+        return subscriptionService.findAll()
+                .thenApply(ResponseEntity::ok);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SubscriptionDTO> findById(@PathVariable String id){
+    public CompletableFuture<ResponseEntity<SubscriptionDTO>> findById(@PathVariable String id) {
         try {
             UUID.fromString(id);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().build();
+        } catch (IllegalArgumentException e) {
+            return CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
         }
 
-        SubscriptionDTO subscription;
-        try {
-            subscription = subscriptionService.findById(id);
-        } catch (Exception e){
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(subscription);
+        return subscriptionService.findById(id)
+                .thenApply(optionalSubscription ->
+                        optionalSubscription.map(subscription -> ResponseEntity.ok(subscription))
+                                .orElse(ResponseEntity.notFound().build()));
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<Subscription> update(@RequestBody SubscriptionDTO subscriptionDTO){
-        Subscription subscription;
-
-        if(subscriptionDTO.getId() == null || subscriptionDTO.getId().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+    public CompletableFuture<ResponseEntity<Subscription>> update(@RequestBody SubscriptionDTO subscriptionDTO) {
+        if (subscriptionDTO.getId() == null || subscriptionDTO.getId().isEmpty()) {
+            return CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
         }
 
-        try{
-            subscriptionService.findById(subscriptionDTO.getId());
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            subscription = subscriptionService.update(subscriptionDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(subscription);
+        return subscriptionService.findById(subscriptionDTO.getId())
+                .thenCompose(subscription -> {
+                    if (subscription.isEmpty()) {
+                        return CompletableFuture.completedFuture(ResponseEntity.notFound().build());
+                    } else {
+                        return subscriptionService.update(subscriptionDTO)
+                                .thenApply(ResponseEntity::ok);
+                    }
+                });
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable String id){
+    public CompletableFuture<ResponseEntity<String>> delete(@PathVariable String id) {
         try {
             UUID.fromString(id);
-        } catch (Exception e){
-            return ResponseEntity.badRequest().build();
+        } catch (IllegalArgumentException e) {
+            return CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
         }
 
-        try {
-            subscriptionService.delete(id);
-        } catch (Exception e){
-            return ResponseEntity.notFound().build();
-        }
-
-        return new ResponseEntity<>("DELETE SUCCESS", HttpStatus.OK);
+        return subscriptionService.delete(id)
+                .thenApply(result -> ResponseEntity.ok("DELETE SUCCESS"))
+                .exceptionally(ex -> ResponseEntity.notFound().build());
     }
 }

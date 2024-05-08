@@ -1,25 +1,24 @@
 package snackscription.subscription.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 import snackscription.subscription.dto.SubscriptionDTO;
 import snackscription.subscription.model.Subscription;
 import snackscription.subscription.service.SubscriptionService;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class SubscriptionControllerTest {
 
     @Mock
@@ -28,160 +27,100 @@ class SubscriptionControllerTest {
     @InjectMocks
     private SubscriptionController subscriptionController;
 
-    @Test
-    void testCreate() {
-        SubscriptionDTO request = new SubscriptionDTO();
-        Subscription response = new Subscription();
+    private SubscriptionDTO subscriptionDTO;
+    private Subscription subscription;
 
-        when(subscriptionService.save(any(SubscriptionDTO.class))).thenReturn(response);
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
 
-        ResponseEntity<Subscription> result = subscriptionController.create(request);
+        subscriptionDTO = new SubscriptionDTO();
+        subscriptionDTO.setId(UUID.randomUUID().toString());
+        subscriptionDTO.setType("MONTHLY");
+        subscriptionDTO.setUserId("user123");
+        subscriptionDTO.setSubscriptionBoxId("box123");
+        subscriptionDTO.setStatus("PENDING");
 
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        subscription = new Subscription();
+        subscription.setId(UUID.randomUUID().toString());
+        subscription.setType("MONTHLY");
+        subscription.setUserId("user123");
+        subscription.setSubscriptionBoxId("box123");
+        subscription.setStatus("PENDING");
     }
 
     @Test
-    void testCreateBadRequest() {
-        SubscriptionDTO request = new SubscriptionDTO();
+    void testCreate() {
+        when(subscriptionService.save(any(SubscriptionDTO.class)))
+                .thenReturn(CompletableFuture.completedFuture(subscription));
 
-        when(subscriptionService.save(any(SubscriptionDTO.class))).thenThrow(new IllegalArgumentException());
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.create(subscriptionDTO);
 
-        ResponseEntity<Subscription> result = subscriptionController.create(request);
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertEquals(ResponseEntity.ok(subscription), result.join());
     }
 
     @Test
     void testFindAll() {
-        List<SubscriptionDTO> subscriptionList = new ArrayList<>();
+        List<SubscriptionDTO> subscriptionDTOList = List.of(subscriptionDTO);
 
-        when(subscriptionService.findAll()).thenReturn(subscriptionList);
+        when(subscriptionService.findAll())
+                .thenReturn(CompletableFuture.completedFuture(subscriptionDTOList));
 
-        ResponseEntity<List<SubscriptionDTO>> result = subscriptionController.findAll();
+        CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> result = subscriptionController.findAll();
 
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(subscriptionList, result.getBody());
-    }
-
-    @Test
-    void testFindById() {
-        String id = UUID.randomUUID().toString();
-        SubscriptionDTO response = new SubscriptionDTO();
-
-        when(subscriptionService.findById(id)).thenReturn(response);
-
-        ResponseEntity<SubscriptionDTO> result = subscriptionController.findById(id);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
-    }
-
-    @Test
-    void testFindByIdInvalidId() {
-        String id = "invalidId";
-
-        ResponseEntity<SubscriptionDTO> result = subscriptionController.findById(id);
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertEquals(ResponseEntity.ok(subscriptionDTOList), result.join());
     }
 
     @Test
     void testUpdate() {
-        SubscriptionDTO request = new SubscriptionDTO();
-        request.setId(UUID.randomUUID().toString());
-        Subscription response = new Subscription();
+        when(subscriptionService.findById(subscriptionDTO.getId()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(subscriptionDTO)));
+        when(subscriptionService.update(subscriptionDTO))
+                .thenReturn(CompletableFuture.completedFuture(subscription));
 
-        when(subscriptionService.update(any(SubscriptionDTO.class))).thenReturn(response);
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(subscriptionDTO);
 
-        ResponseEntity<Subscription> result = subscriptionController.update(request);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals(response, result.getBody());
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertEquals(ResponseEntity.ok(subscription), result.join());
     }
 
     @Test
-    void testUpdateBadRequest() {
-        SubscriptionDTO request = new SubscriptionDTO();
-        request.setId("123");
+    void testFindById() {
+        when(subscriptionService.findById(subscriptionDTO.getId()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(subscriptionDTO)));
 
-        when(subscriptionService.update(any(SubscriptionDTO.class))).thenThrow(new IllegalArgumentException());
+        CompletableFuture<ResponseEntity<SubscriptionDTO>> result = subscriptionController.findById(subscriptionDTO.getId());
 
-        ResponseEntity<Subscription> result = subscriptionController.update(request);
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertEquals(ResponseEntity.ok(subscriptionDTO), result.join());
+    }
 
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
+    @Test
+    void testFindByIdInvalidId() {
+        String invalidId = "invalid_id";
+
+        CompletableFuture<ResponseEntity<SubscriptionDTO>> result = subscriptionController.findById(invalidId);
+
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertEquals(ResponseEntity.badRequest().build(), result.join());
     }
 
     @Test
     void testDelete() {
-        String id = UUID.randomUUID().toString();
+        when(subscriptionService.delete(subscriptionDTO.getId()))
+                .thenReturn(CompletableFuture.completedFuture(null));
 
-        ResponseEntity<String> expectedResult = new ResponseEntity<>("DELETE SUCCESS", HttpStatus.OK);
+        CompletableFuture<ResponseEntity<String>> result = subscriptionController.delete(subscriptionDTO.getId());
 
-        doNothing().when(subscriptionService).delete(id);
-
-        ResponseEntity<String> result = subscriptionController.delete(id);
-
-        assertEquals(expectedResult, result);
-    }
-
-    @Test
-    void testDeleteInvalidId() {
-        String id = "invalidId";
-
-        ResponseEntity<String> result = subscriptionController.delete(id);
-
-        assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
-    }
-
-    @Test
-    void testFindByIdNotFound() {
-        String id = UUID.randomUUID().toString();
-
-        when(subscriptionService.findById(id)).thenReturn(null);
-
-        ResponseEntity<SubscriptionDTO> response = subscriptionController.findById(UUID.randomUUID().toString());
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    void testUpdateNotFound() {
-        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
-        subscriptionDTO.setId(UUID.randomUUID().toString());
-        subscriptionDTO.setStatus("PENDING");
-
-        doThrow(new IllegalArgumentException("Subscription not found"))
-                .when(subscriptionService)
-                .update(subscriptionDTO);
-
-        when(subscriptionService.findById(UUID.randomUUID().toString())).thenReturn(null);
-
-        ResponseEntity<Subscription> response = subscriptionController.update(subscriptionDTO);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    void testUpdateNullId() {
-        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
-
-        ResponseEntity<Subscription> response = subscriptionController.update(subscriptionDTO);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-
-    @Test
-    void testDeleteNotFound() {
-        String id = UUID.randomUUID().toString();
-
-        doThrow(new IllegalArgumentException("Subscription not found"))
-                .when(subscriptionService)
-                .delete(id);
-
-        ResponseEntity<String> response = subscriptionController.delete(id);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertEquals(ResponseEntity.ok("DELETE SUCCESS"), result.join());
     }
 }

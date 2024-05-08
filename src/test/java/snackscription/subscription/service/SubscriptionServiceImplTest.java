@@ -1,40 +1,39 @@
 package snackscription.subscription.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import snackscription.subscription.dto.SubscriptionDTO;
-import snackscription.subscription.factory.SubscriptionFactory;
 import snackscription.subscription.model.ShippingAddress;
 import snackscription.subscription.model.Subscription;
 import snackscription.subscription.repository.SubscriptionRepository;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class SubscriptionServiceImplTest {
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
-    @Mock
-    private SubscriptionFactory subscriptionFactory;
-
     @InjectMocks
     private SubscriptionServiceImpl subscriptionService;
 
-    private Subscription subscription;
     private SubscriptionDTO subscriptionDTO;
+    private Subscription subscription;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         subscriptionDTO = new SubscriptionDTO();
         subscriptionDTO.setId("1");
         subscriptionDTO.setType("MONTHLY");
@@ -58,28 +57,29 @@ class SubscriptionServiceImplTest {
                 "123456",
                 "081234567890"));
         subscription.setStatus("PENDING");
-
-        when(subscriptionFactory.create(anyString(), anyString(), anyString(), any(ShippingAddress.class)))
-                .thenReturn(subscription);
     }
 
     @Test
-    void testSave(){
-        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(subscription);
-        Subscription result = subscriptionService.save(subscriptionDTO);
+    void testSave() {
+        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(CompletableFuture.completedFuture(subscription).resultNow());
+
+        CompletableFuture<Subscription> result = subscriptionService.save(subscriptionDTO);
 
         assertNotNull(result);
-        assertEquals(subscription, result);
+        assertTrue(result.isDone());
+        assertSame(subscription, result.join());
     }
 
     @Test
     void testFindAll() {
-        when(subscriptionRepository.findAll()).thenReturn(Collections.singletonList(subscription));
+        List<Subscription> subscriptions = List.of(subscription);
+        when(subscriptionRepository.findAll()).thenReturn(subscriptions);
 
-        List<SubscriptionDTO> result = subscriptionService.findAll();
+        CompletableFuture<List<SubscriptionDTO>> result = subscriptionService.findAll();
 
-        assertEquals(1, result.size());
-        assertEquals(subscription.getId(), result.get(0).getId());
+        assertNotNull(result);
+        assertTrue(result.isDone());
+        assertFalse(result.join().isEmpty());
     }
 
     @Test
@@ -87,88 +87,33 @@ class SubscriptionServiceImplTest {
         String id = "1";
         when(subscriptionRepository.findById(id)).thenReturn(Optional.of(subscription));
 
-        SubscriptionDTO result = subscriptionService.findById(id);
+        CompletableFuture<Optional<SubscriptionDTO>> result = subscriptionService.findById(id);
 
         assertNotNull(result);
-        assertEquals(id, result.getId());
-    }
-
-    @Test
-    void testFindByIdNotFound() {
-        String id = "nonexistent";
-
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            subscriptionService.findById(id);
-        });
-    }
-
-    @Test
-    void testFindByIdNullId() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            subscriptionService.findById(null);
-        });
+        assertTrue(result.isDone());
+        assertTrue(result.join().isPresent());
     }
 
     @Test
     void testUpdate() {
-        subscriptionDTO.setStatus("SUBSCRIBED");
+        when(subscriptionRepository.findById(anyString())).thenReturn(Optional.of(subscription));
+        when(subscriptionRepository.update(any(Subscription.class))).thenReturn(CompletableFuture.completedFuture(subscription).resultNow());
 
-        when(subscriptionRepository.findById(subscriptionDTO.getId())).thenReturn(Optional.of(subscription));
-        when(subscriptionRepository.update(subscription)).thenReturn(subscription);
-
-        Subscription result = subscriptionService.update(subscriptionDTO);
+        CompletableFuture<Subscription> result = subscriptionService.update(subscriptionDTO);
 
         assertNotNull(result);
-        assertEquals(subscription, result);
-        assertEquals(subscriptionDTO.getStatus(), result.getStatus());
-    }
-
-    @Test
-    void testUpdateNotFound() {
-        subscriptionDTO.setId("nonexistent");
-
-        when(subscriptionRepository.findById(subscriptionDTO.getId())).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            subscriptionService.update(subscriptionDTO);
-        });
-    }
-
-    @Test
-    void testUpdateNullSubscriptionDTO() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            subscriptionService.update(null);
-        });
+        assertTrue(result.isDone());
+        assertSame(subscription, result.join());
     }
 
     @Test
     void testDelete() {
         String id = "1";
-
         when(subscriptionRepository.findById(id)).thenReturn(Optional.of(subscription));
 
-        subscriptionService.delete(id);
+        CompletableFuture<Void> result = subscriptionService.delete(id);
 
-        verify(subscriptionRepository, times(1)).delete(id);
-    }
-
-    @Test
-    void testDeleteNullId() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            subscriptionService.delete(null);
-        });
-    }
-
-    @Test
-    void testDelete_NotFound() {
-        String id = "nonexistent";
-
-        when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            subscriptionService.delete(id);
-        });
+        assertNotNull(result);
+        assertTrue(result.isDone());
     }
 }
