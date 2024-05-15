@@ -32,6 +32,8 @@ dependencies {
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus:1.12.5")
+	implementation("org.springframework.boot:spring-boot-starter-actuator:3.2.5")
 }
 
 tasks.withType<Test> {
