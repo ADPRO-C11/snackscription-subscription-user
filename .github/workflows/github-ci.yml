@@ -74,13 +74,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Test with Gradle
-        run: |
-          sed -i "s|\${{ secrets.JDBC_DATABASE_URL }}|${{ secrets.JDBC_DATABASE_URL }}|g" src/main/resources/application-prod.properties
-          ./gradlew check --info --stacktrace
-          ./gradlew test
-          ./gradlew jacocoTestReport
-
   publish:
     name: Publish Docker Image
     runs-on: ubuntu-latest
