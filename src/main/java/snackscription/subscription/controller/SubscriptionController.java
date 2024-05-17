@@ -21,6 +21,11 @@ public class SubscriptionController {
         this.subscriptionService = subscriptionService;
     }
 
+    @GetMapping("")
+    public ResponseEntity<String> main(){
+        return ResponseEntity.ok("Snackscription - Subscription Management API");
+    }
+
     @PostMapping("/create")
     public CompletableFuture<ResponseEntity<Subscription>> create(@RequestBody SubscriptionDTO subscriptionDTO) {
         return subscriptionService.save(subscriptionDTO)
