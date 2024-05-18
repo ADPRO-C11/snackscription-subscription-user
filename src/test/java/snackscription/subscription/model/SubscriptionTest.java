@@ -74,10 +74,12 @@ class SubscriptionTest {
 
     @Test
     void testCreateInvalidSubscription() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Subscription subscription = new Subscription("YEARLY",
-                    this.subscription.getUserId(), this.subscription.getSubscriptionBoxId(), this.subscription.getShippingAddress());
-        });
+        assertThrows(IllegalArgumentException.class, this::createInvalidSubscription);
+    }
+
+    private void createInvalidSubscription() {
+        new Subscription("YEARLY",
+                this.subscription.getUserId(), this.subscription.getSubscriptionBoxId(), this.subscription.getShippingAddress());
     }
 
     @Test
