@@ -1,40 +1,74 @@
 name: SonarCloud
+
 on:
   push:
     branches:
-      - main
       - staging
+      - main
+
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: subscription
+
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
+
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          java-version: 21
-          distribution: 'temurin' # Alternative distribution options are available
+          distribution: "temurin"
+          java-version: "21"
+          cache: "gradle"
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
       - name: Cache Gradle packages
         uses: actions/cache@v3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in `seq 1 30`; do
+            nc -z localhost 5433 && echo "PostgreSQL is up and running" && exit 0
+            echo "Waiting for PostgreSQL..."
+            sleep 1
+          done
+          echo "PostgreSQL failed to start" && exit 1
+
       - name: Build and analyze
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar --info
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/subscription
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: password
+        run: chmod +x ./gradlew && ./gradlew build sonar --info
