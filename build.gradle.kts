@@ -23,19 +23,23 @@ repositories {
 	mavenCentral()
 }
 
+val springBootVersion = "2.5.0"
+val micrometerVersion = "1.12.5"
+val dotenvVersion = "4.0.0"
+
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion")
+	implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
 	compileOnly("org.projectlombok:lombok")
-	developmentOnly("org.springframework.boot:spring-boot-devtools")
-	runtimeOnly("org.postgresql:postgresql")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+	runtimeOnly("org.postgresql:postgresql")
+	runtimeOnly("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	runtimeOnly("io.micrometer:micrometer-registry-prometheus:1.12.5")
-	implementation("org.springframework.boot:spring-boot-starter-actuator:3.2.5")
-	implementation("me.paulschwarz:spring-dotenv:4.0.0")
 }
 
 sonar {
