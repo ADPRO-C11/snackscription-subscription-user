@@ -8,6 +8,7 @@ class SubscriptionApplicationTests {
 
 	@Test
 	void contextLoads() {
+		SubscriptionApplication.main(new String[] {});
 	}
 
 }

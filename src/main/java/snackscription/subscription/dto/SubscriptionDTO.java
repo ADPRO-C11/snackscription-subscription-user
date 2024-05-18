@@ -5,7 +5,6 @@ import snackscription.subscription.model.ShippingAddress;
 
 import java.time.LocalDateTime;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
