@@ -74,10 +74,30 @@ class SubscriptionTest {
 
     @Test
     void testCreateInvalidSubscription() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Subscription subscription = new Subscription("YEARLY",
-                    this.subscription.getUserId(), this.subscription.getSubscriptionBoxId(), this.subscription.getShippingAddress());
-        });
+        assertThrows(IllegalArgumentException.class, this::createInvalidSubscription);
+    }
+
+    private void createInvalidSubscription() {
+        new Subscription("YEARLY",
+                this.subscription.getUserId(), this.subscription.getSubscriptionBoxId(), this.subscription.getShippingAddress());
+    }
+
+    @Test
+    void testSetUniqueCodeMonthly() {
+        subscription.setUniqueCode("MONTHLY");
+        assertEquals("MTH-", subscription.getUniqueCode().substring(0, 4));
+    }
+
+    @Test
+    void testSetUniqueCodeQuarterly() {
+        subscription.setUniqueCode("QUARTERLY");
+        assertEquals("QTR-", subscription.getUniqueCode().substring(0, 4));
+    }
+
+    @Test
+    void testSetUniqueCodeSemiAnnual() {
+        subscription.setUniqueCode("SEMI-ANNUAL");
+        assertEquals("SAA-", subscription.getUniqueCode().substring(0, 4));
     }
 
     @Test
