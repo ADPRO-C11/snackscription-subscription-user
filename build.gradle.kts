@@ -3,6 +3,7 @@ plugins {
 	jacoco
 	id("org.springframework.boot") version "3.2.5"
 	id("io.spring.dependency-management") version "1.1.4"
+	id("org.sonarqube") version "4.4.1.3373"
 }
 
 group = "snackscription"
@@ -32,6 +33,14 @@ dependencies {
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+sonar {
+	properties {
+		property("sonar.projectKey", "ADPRO-C11_snackscription-subscription-user")
+		property("sonar.organization", "adpro-c11")
+		property("sonar.host.url", "https://sonarcloud.io")
+	}
 }
 
 tasks.withType<Test> {
