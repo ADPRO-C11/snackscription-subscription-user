@@ -24,8 +24,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Async
     public CompletableFuture<Subscription> save(SubscriptionDTO subscriptionDTO) {
-        Subscription subscription = DTOMapper.convertDTOtoModel(subscriptionDTO);
-        return CompletableFuture.completedFuture(subscriptionRepository.save(subscription));
+        try{
+            Subscription subscription = DTOMapper.convertDTOtoModel(subscriptionDTO);
+            return CompletableFuture.completedFuture(subscriptionRepository.save(subscription));
+        } catch (Exception e){
+            throw new IllegalArgumentException("Invalid Request", e);
+        }
     }
 
     @Override
