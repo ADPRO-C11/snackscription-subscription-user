@@ -126,10 +126,10 @@ class SubscriptionControllerTest {
 
     @Test
     void testUpdate_InvalidId() {
-        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        SubscriptionDTO invalidSubscriptionDTO = new SubscriptionDTO();
         CompletableFuture<ResponseEntity<Subscription>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
 
-        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(subscriptionDTO);
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(invalidSubscriptionDTO);
 
         assertTrue(result.isDone());
         assertEquals(expectedResult.join(), result.join());
@@ -137,13 +137,13 @@ class SubscriptionControllerTest {
 
     @Test
     void testUpdate_SubscriptionNotFound() {
-        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
-        subscriptionDTO.setId(UUID.randomUUID().toString());
+        SubscriptionDTO invalidSubscriptionDTO = new SubscriptionDTO();
+        invalidSubscriptionDTO.setId(UUID.randomUUID().toString());
         CompletableFuture<ResponseEntity<Subscription>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.notFound().build());
 
-        when(subscriptionService.findById(subscriptionDTO.getId())).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(subscriptionService.findById(invalidSubscriptionDTO.getId())).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(subscriptionDTO);
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(invalidSubscriptionDTO);
 
         assertTrue(result.isDone());
         assertEquals(expectedResult.join(), result.join());
@@ -180,17 +180,14 @@ class SubscriptionControllerTest {
 
     @Test
     void testCreateExceptionHandler() {
-        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        SubscriptionDTO invalidSubscriptionDTO = new SubscriptionDTO();
         CompletableFuture<ResponseEntity<Subscription>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
 
-        // Mock the behavior of subscriptionService.save to throw an IllegalArgumentException
         CompletableFuture<Subscription> failedFuture = CompletableFuture.failedFuture(new IllegalArgumentException("Invalid Request"));
-        when(subscriptionService.save(subscriptionDTO)).thenReturn(failedFuture);
+        when(subscriptionService.save(invalidSubscriptionDTO)).thenReturn(failedFuture);
 
-        // Invoke the controller method
-        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.create(subscriptionDTO);
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.create(invalidSubscriptionDTO);
 
-        // Verify that the result is completed with a bad request response
         assertTrue(result.isDone());
         assertEquals(expectedResult.join(), result.join());
     }
