@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import snackscription.subscription.dto.DTOMapper;
 import snackscription.subscription.dto.SubscriptionDTO;
 import snackscription.subscription.model.ShippingAddress;
 import snackscription.subscription.model.Subscription;
@@ -26,10 +27,13 @@ class SubscriptionServiceImplTest {
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
+    @Mock
+    private SubscriptionDTO subscriptionDTO;
+
     @InjectMocks
     private SubscriptionServiceImpl subscriptionService;
 
-    private SubscriptionDTO subscriptionDTO;
+    @Mock
     private Subscription subscription;
 
     @BeforeEach
@@ -115,5 +119,70 @@ class SubscriptionServiceImplTest {
 
         assertNotNull(result);
         assertTrue(result.isDone());
+    }
+
+    @Test
+    void findById_NullOrEmptyId_ThrowsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, this::findByIdWithNullOrEmptyId);
+    }
+
+    private void findByIdWithNullOrEmptyId() {
+        subscriptionService.findById(null).join();
+        subscriptionService.findById("").join();
+    }
+
+    @Test
+    void update_NullSubscriptionDTO_ThrowsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, this::updateWithNullSubscriptionDTO);
+    }
+
+    private void updateWithNullSubscriptionDTO() {
+        subscriptionService.update(null).join();
+    }
+
+    @Test
+    void update_NonExistentSubscription_ThrowsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, this::updateNonExistentSubscription);
+    }
+
+    private void updateNonExistentSubscription() {
+        SubscriptionDTO nonExistentSubscriptionDTO = new SubscriptionDTO();
+        nonExistentSubscriptionDTO.setId("nonExistentId");
+        when(subscriptionRepository.findById(nonExistentSubscriptionDTO.getId())).thenReturn(Optional.empty());
+        subscriptionService.update(nonExistentSubscriptionDTO).join();
+    }
+
+    @Test
+    void delete_NullOrEmptyId_ThrowsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, this::deleteWithNullOrEmptyId);
+    }
+
+    private void deleteWithNullOrEmptyId() {
+        subscriptionService.delete(null).join();
+        subscriptionService.delete(" ").join();
+    }
+
+    @Test
+    void delete_NonExistentSubscription_ThrowsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, this::deleteNonExistentSubscription);
+    }
+
+    private void deleteNonExistentSubscription() {
+        String nonExistentId = "nonExistentId";
+        when(subscriptionRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+        subscriptionService.delete(nonExistentId).join();
+    }
+
+    @Test
+    void testInvalidSave() {
+        subscriptionDTO = new SubscriptionDTO();
+        assertThrows(
+                IllegalArgumentException.class, this::createInvalidSave
+        );
+    }
+
+    private void createInvalidSave(){
+        subscriptionDTO = new SubscriptionDTO();
+        subscriptionService.save(subscriptionDTO);
     }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -122,5 +123,76 @@ class SubscriptionControllerTest {
         assertNotNull(result);
         assertTrue(result.isDone());
         assertEquals(ResponseEntity.ok("DELETE SUCCESS"), result.join());
+    }
+
+    @Test
+    void testUpdate_InvalidId() {
+        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        CompletableFuture<ResponseEntity<Subscription>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
+
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(subscriptionDTO);
+
+        assertTrue(result.isDone());
+        assertEquals(expectedResult.join(), result.join());
+    }
+
+    @Test
+    void testUpdate_SubscriptionNotFound() {
+        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        subscriptionDTO.setId(UUID.randomUUID().toString());
+        CompletableFuture<ResponseEntity<Subscription>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.notFound().build());
+
+        when(subscriptionService.findById(subscriptionDTO.getId())).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.update(subscriptionDTO);
+
+        assertTrue(result.isDone());
+        assertEquals(expectedResult.join(), result.join());
+    }
+
+    @Test
+    void testDelete_InvalidId() {
+        CompletableFuture<ResponseEntity<String>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
+
+        CompletableFuture<ResponseEntity<String>> result = subscriptionController.delete("invalid_id");
+
+        assertTrue(result.isDone());
+        assertEquals(expectedResult.join(), result.join());
+    }
+
+    @Test
+    void testDelete_SubscriptionNotFound() {
+        String invalidId = UUID.randomUUID().toString();
+        CompletableFuture<ResponseEntity<String>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.notFound().build());
+
+        when(subscriptionService.delete(invalidId)).thenReturn(CompletableFuture.failedFuture(new IllegalArgumentException()));
+
+        CompletableFuture<ResponseEntity<String>> result = subscriptionController.delete(invalidId);
+
+        assertTrue(result.isDone());
+        assertEquals(expectedResult.join(), result.join());
+    }
+
+    @Test
+    void testMain() {
+        ResponseEntity<String> response = subscriptionController.main();
+        assertEquals("Snackscription - Subscription Management API", response.getBody());
+    }
+
+    @Test
+    void testCreateExceptionHandler() {
+        SubscriptionDTO subscriptionDTO = new SubscriptionDTO();
+        CompletableFuture<ResponseEntity<Subscription>> expectedResult = CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
+
+        // Mock the behavior of subscriptionService.save to throw an IllegalArgumentException
+        CompletableFuture<Subscription> failedFuture = CompletableFuture.failedFuture(new IllegalArgumentException("Invalid Request"));
+        when(subscriptionService.save(subscriptionDTO)).thenReturn(failedFuture);
+
+        // Invoke the controller method
+        CompletableFuture<ResponseEntity<Subscription>> result = subscriptionController.create(subscriptionDTO);
+
+        // Verify that the result is completed with a bad request response
+        assertTrue(result.isDone());
+        assertEquals(expectedResult.join(), result.join());
     }
 }
