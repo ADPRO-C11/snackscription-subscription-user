@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import snackscription.subscription.dto.DTOMapper;
 import snackscription.subscription.dto.SubscriptionDTO;
 import snackscription.subscription.model.ShippingAddress;
 import snackscription.subscription.model.Subscription;
