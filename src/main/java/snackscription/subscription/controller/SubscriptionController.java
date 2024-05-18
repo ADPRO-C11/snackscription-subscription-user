@@ -49,7 +49,7 @@ public class SubscriptionController {
 
         return subscriptionService.findById(id)
                 .thenApply(optionalSubscription ->
-                        optionalSubscription.map(subscription -> ResponseEntity.ok(subscription))
+                        optionalSubscription.map(ResponseEntity::ok)
                                 .orElse(ResponseEntity.notFound().build()));
     }
 
