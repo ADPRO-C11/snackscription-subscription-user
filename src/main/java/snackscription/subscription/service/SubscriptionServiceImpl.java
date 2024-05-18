@@ -11,7 +11,6 @@ import snackscription.subscription.repository.SubscriptionRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -35,10 +34,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         List<Subscription> subscriptions = subscriptionRepository.findAll();
         List<SubscriptionDTO> dtos = subscriptions.stream()
                 .map(DTOMapper::convertModelToDto)
-                .collect(Collectors.toList());
+                .toList();
         return CompletableFuture.completedFuture(dtos);
     }
-
     @Override
     @Async
     public CompletableFuture<Optional<SubscriptionDTO>> findById(String id) {
