@@ -15,8 +15,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
+    private final SubscriptionRepository subscriptionRepository;
+
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository) {
+        this.subscriptionRepository = subscriptionRepository;
+    }
 
     @Override
     @Async
