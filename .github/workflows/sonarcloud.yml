@@ -78,4 +78,4 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: password
         run: |
           chmod +x ./gradlew
-          ./gradlew build jacocoTestReport sonarqube --info
+          ./gradlew build sonar --info
