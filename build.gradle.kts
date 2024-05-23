@@ -26,6 +26,7 @@ repositories {
 val springBootVersion = "2.5.0"
 val micrometerVersion = "1.12.5"
 val dotenvVersion = "4.0.0"
+val jwtVersion = "0.12.5"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -33,12 +34,17 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion")
 	implementation("me.paulschwarz:spring-dotenv:$dotenvVersion")
+	implementation("io.jsonwebtoken:jjwt-api:$jwtVersion")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 	annotationProcessor("org.projectlombok:lombok")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jwtVersion")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jwtVersion")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
@@ -50,12 +56,30 @@ sonar {
 	}
 }
 
-tasks.withType<Test> {
+tasks.register<Test>("unitTest") {
+	description = "Runs unit tests."
+	group = "verification"
+
+	filter {
+		excludeTestsMatching("*FunctionalTest")
+	}
+}
+
+tasks.register<Test>("functionalTest") {
+	description = "Runs functional tests."
+	group = "verification"
+
+	filter {
+		includeTestsMatching("*FunctionalTest")
+	}
+}
+
+tasks.withType<Test>().configureEach {
 	useJUnitPlatform()
 }
 
-tasks.test {
-	filter {
+tasks.test{
+	filter{
 		excludeTestsMatching("*FunctionalTest")
 	}
 
@@ -63,5 +87,13 @@ tasks.test {
 }
 
 tasks.jacocoTestReport {
-	dependsOn(tasks.test)
+	classDirectories.setFrom(files(classDirectories.files.map {
+		fileTree(it) { exclude("**/*Application**") }
+	}))
+	dependsOn(tasks.test) // tests are required to run before generating the report
+	reports {
+		xml.required.set(true)
+		csv.required.set(true)
+		html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+	}
 }
