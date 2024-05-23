@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import snackscription.subscription.dto.SubscriptionDTO;
 import snackscription.subscription.model.Subscription;
 import snackscription.subscription.service.SubscriptionService;
+import snackscription.subscription.utils.JWTUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,31 +17,45 @@ import java.util.concurrent.CompletableFuture;
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
+    private final JWTUtils jwtUtils;
 
-    public SubscriptionController(SubscriptionService subscriptionService) {
+    public SubscriptionController(SubscriptionService subscriptionService, JWTUtils jwtUtils) {
         this.subscriptionService = subscriptionService;
+        this.jwtUtils = jwtUtils;
+    }
+
+    private void validateToken(String token) throws IllegalAccessException {
+        String jwt = token.replace("Bearer ", "");
+        if (!jwtUtils.isTokenValid(jwt)) {
+            throw new IllegalAccessException("You have no permission.");
+        }
     }
 
     @GetMapping("")
-    public ResponseEntity<String> main(){
+    public ResponseEntity<String> main() {
         return ResponseEntity.ok("Snackscription - Subscription Management API");
     }
 
     @PostMapping("/create")
-    public CompletableFuture<ResponseEntity<Subscription>> create(@RequestBody SubscriptionDTO subscriptionDTO) {
+    public CompletableFuture<ResponseEntity<Subscription>> create(@RequestHeader(value = "Authorization") String token,
+                                                                  @RequestBody SubscriptionDTO subscriptionDTO) throws IllegalAccessException {
+        validateToken(token);
         return subscriptionService.save(subscriptionDTO)
                 .thenApply(ResponseEntity::ok)
                 .exceptionally(ex -> ResponseEntity.badRequest().build());
     }
 
     @GetMapping("/list")
-    public CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> findAll() {
+    public CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> findAll(@RequestHeader(value = "Authorization") String token) throws IllegalAccessException {
+        validateToken(token);
         return subscriptionService.findAll()
                 .thenApply(ResponseEntity::ok);
     }
 
     @GetMapping("/{id}")
-    public CompletableFuture<ResponseEntity<SubscriptionDTO>> findById(@PathVariable String id) {
+    public CompletableFuture<ResponseEntity<SubscriptionDTO>> findById(@RequestHeader(value = "Authorization") String token,
+                                                                       @PathVariable String id) throws IllegalAccessException {
+        validateToken(token);
         try {
             UUID.fromString(id);
         } catch (IllegalArgumentException e) {
@@ -54,7 +69,9 @@ public class SubscriptionController {
     }
 
     @PatchMapping("/update")
-    public CompletableFuture<ResponseEntity<Subscription>> update(@RequestBody SubscriptionDTO subscriptionDTO) {
+    public CompletableFuture<ResponseEntity<Subscription>> update(@RequestHeader(value = "Authorization") String token,
+                                                                  @RequestBody SubscriptionDTO subscriptionDTO) throws IllegalAccessException {
+        validateToken(token);
         if (subscriptionDTO.getId() == null || subscriptionDTO.getId().isEmpty()) {
             return CompletableFuture.completedFuture(ResponseEntity.badRequest().build());
         }
@@ -71,7 +88,9 @@ public class SubscriptionController {
     }
 
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<String>> delete(@PathVariable String id) {
+    public CompletableFuture<ResponseEntity<String>> delete(@RequestHeader(value = "Authorization") String token,
+                                                            @PathVariable String id) throws IllegalAccessException {
+        validateToken(token);
         try {
             UUID.fromString(id);
         } catch (IllegalArgumentException e) {
