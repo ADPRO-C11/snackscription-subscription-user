@@ -198,4 +198,12 @@ class SubscriptionControllerTest {
         assertTrue(result.isDone());
         assertEquals(expectedResult.join(), result.join());
     }
+
+    @Test
+    void testCreateWithInvalidToken() {
+        IllegalAccessException exception = assertThrows(IllegalAccessException.class, () -> {
+            subscriptionController.create("invalid_token", subscriptionDTO);
+        });
+        assertEquals("You have no permission.", exception.getMessage());
+    }
 }
