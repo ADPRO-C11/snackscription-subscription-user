@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/subscription")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin("*")
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
@@ -49,6 +49,13 @@ public class SubscriptionController {
     public CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> findAll(@RequestHeader(value = "Authorization") String token) throws IllegalAccessException {
         validateToken(token);
         return subscriptionService.findAll()
+                .thenApply(ResponseEntity::ok);
+    }
+
+    @GetMapping("/list/{userId}")
+    public CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> findByUser(@RequestHeader(value = "Authorization") String token,  @PathVariable String userId) throws IllegalAccessException {
+        validateToken(token);
+        return subscriptionService.findByUser(userId)
                 .thenApply(ResponseEntity::ok);
     }
 

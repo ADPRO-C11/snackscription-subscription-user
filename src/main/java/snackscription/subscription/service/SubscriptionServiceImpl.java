@@ -54,6 +54,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Async
+    public CompletableFuture<List<SubscriptionDTO>> findByUser(String userId){
+        List<Subscription> subscriptions = subscriptionRepository.findByUser(userId);
+        List<SubscriptionDTO> dtos = subscriptions.stream()
+                .map(DTOMapper::convertModelToDto)
+                .toList();
+        return CompletableFuture.completedFuture(dtos);
+    }
+
+    @Override
+    @Async
     public CompletableFuture<Subscription> update(SubscriptionDTO subscriptionDTO) {
         if (subscriptionDTO == null) {
             throw new IllegalArgumentException("Subscription cannot be null");
