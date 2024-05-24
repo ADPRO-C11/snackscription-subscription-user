@@ -64,7 +64,6 @@ class SubscriptionServiceImplTest {
         subscription2.setStatus("SUBSCRIBED");
 
         subscriptionDTO1 = DTOMapper.convertModelToDto(subscription1);
-        SubscriptionDTO subscriptionDTO2 = DTOMapper.convertModelToDto(subscription2);
 
         subscriptions = Arrays.asList(subscription1, subscription2);
     }
@@ -131,13 +130,25 @@ class SubscriptionServiceImplTest {
 
     @Test
     void findById_NullOrEmptyId_ThrowsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.findById(null).join());
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.findById("").join());
+        assertThrows(IllegalArgumentException.class, this::findByIdWithNull);
+        assertThrows(IllegalArgumentException.class, this::findByIdWithEmpty);
+    }
+
+    private void findByIdWithNull() {
+        subscriptionService.findById(null).join();
+    }
+
+    private void findByIdWithEmpty() {
+        subscriptionService.findById("").join();
     }
 
     @Test
     void update_NullSubscriptionDTO_ThrowsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.update(null).join());
+        assertThrows(IllegalArgumentException.class, this::updateWithNullSubscriptionDTO);
+    }
+
+    private void updateWithNullSubscriptionDTO() {
+        subscriptionService.update(null).join();
     }
 
     @Test
@@ -146,13 +157,25 @@ class SubscriptionServiceImplTest {
         nonExistentSubscriptionDTO.setId("nonExistentId");
         when(subscriptionRepository.findById(nonExistentSubscriptionDTO.getId())).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.update(nonExistentSubscriptionDTO).join());
+        assertThrows(IllegalArgumentException.class, () -> updateNonExistentSubscription(nonExistentSubscriptionDTO));
+    }
+
+    private void updateNonExistentSubscription(SubscriptionDTO nonExistentSubscriptionDTO) {
+        subscriptionService.update(nonExistentSubscriptionDTO).join();
     }
 
     @Test
     void delete_NullOrEmptyId_ThrowsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.delete(null).join());
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.delete(" ").join());
+        assertThrows(IllegalArgumentException.class, this::deleteWithNullId);
+        assertThrows(IllegalArgumentException.class, this::deleteWithEmptyId);
+    }
+
+    private void deleteWithNullId() {
+        subscriptionService.delete(null).join();
+    }
+
+    private void deleteWithEmptyId() {
+        subscriptionService.delete(" ").join();
     }
 
     @Test
@@ -160,8 +183,13 @@ class SubscriptionServiceImplTest {
         String nonExistentId = "nonExistentId";
         when(subscriptionRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> subscriptionService.delete(nonExistentId).join());
+        assertThrows(IllegalArgumentException.class, () -> deleteNonExistentSubscription(nonExistentId));
     }
+
+    private void deleteNonExistentSubscription(String nonExistentId) {
+        subscriptionService.delete(nonExistentId).join();
+    }
+
 
     @Test
     void testFindByUser() {
