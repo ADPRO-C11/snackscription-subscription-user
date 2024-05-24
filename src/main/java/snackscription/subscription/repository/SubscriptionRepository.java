@@ -35,6 +35,14 @@ public class SubscriptionRepository {
     }
 
     @Transactional
+    public List<Subscription> findByUser(String userId) {
+        String jpql = "SELECT s FROM Subscription s WHERE s.userId = :userId";
+        TypedQuery<Subscription> query = entityManager.createQuery(jpql, Subscription.class);
+        query.setParameter("userId", userId);
+        return query.getResultList();
+    }
+
+    @Transactional
     public Subscription update(Subscription subscription){
         return entityManager.merge(subscription);
     }
