@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 public interface SubscriptionService {
     CompletableFuture<Subscription> save(SubscriptionDTO subscriptionDTO);
     CompletableFuture<List<SubscriptionDTO>> findAll();
+    CompletableFuture<List<SubscriptionDTO>> findByUser(String id);
     CompletableFuture<Optional<SubscriptionDTO>> findById(String id);
     CompletableFuture<Subscription> update(SubscriptionDTO subscriptionDTO);
     CompletableFuture<Void> delete(String id);

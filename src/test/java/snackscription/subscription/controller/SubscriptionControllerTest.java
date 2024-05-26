@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SubscriptionControllerTest {
 
@@ -33,7 +33,9 @@ class SubscriptionControllerTest {
 
     private SubscriptionDTO subscriptionDTO;
     private Subscription subscription;
+    private List<SubscriptionDTO> subscriptionDTOs;
     private final String validToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyMTIzIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3MTYyMzkwMjIsImV4cCI6MTcxNjMyNTQyMn0.5wT-7Q_Oc2by1b2q6xR6g-eOdAG_RUVH5HbyCbn88mE";
+    private final String invalidToken = "invalid_token";
 
     @BeforeEach
     void setUp() {
@@ -52,6 +54,15 @@ class SubscriptionControllerTest {
         subscription.setUserId("user123");
         subscription.setSubscriptionBoxId("box123");
         subscription.setStatus("PENDING");
+
+        SubscriptionDTO subscriptionDTO2 = new SubscriptionDTO();
+        subscriptionDTO2.setId(UUID.randomUUID().toString());
+        subscriptionDTO2.setType("QUARTERLY");
+        subscriptionDTO2.setUserId("user123");
+        subscriptionDTO2.setSubscriptionBoxId("box456");
+        subscriptionDTO2.setStatus("SUBSCRIBED");
+
+        subscriptionDTOs = List.of(subscriptionDTO, subscriptionDTO2);
 
         when(jwtUtils.isTokenValid(validToken)).thenReturn(true);
     }
@@ -80,6 +91,28 @@ class SubscriptionControllerTest {
         assertNotNull(result);
         assertTrue(result.isDone());
         assertEquals(ResponseEntity.ok(subscriptionDTOList), result.join());
+    }
+
+    @Test
+    void testFindByUser_ValidToken() throws IllegalAccessException {
+        String userId = "user123";
+        when(subscriptionService.findByUser(userId)).thenReturn(CompletableFuture.completedFuture(subscriptionDTOs));
+
+        CompletableFuture<ResponseEntity<List<SubscriptionDTO>>> response = subscriptionController.findByUser("Bearer " + validToken, userId);
+
+        assertNotNull(response);
+        assertTrue(response.isDone());
+        assertEquals(ResponseEntity.ok(subscriptionDTOs), response.join());
+        verify(subscriptionService, times(1)).findByUser(userId);
+    }
+
+    @Test
+    void testFindByUser_InvalidToken() {
+        String userId = "user123";
+        when(jwtUtils.isTokenValid(invalidToken)).thenReturn(false);
+
+        assertThrows(IllegalAccessException.class, () -> subscriptionController.findByUser("Bearer " + invalidToken, userId));
+        verify(subscriptionService, never()).findByUser(anyString());
     }
 
     @Test
@@ -201,9 +234,8 @@ class SubscriptionControllerTest {
 
     @Test
     void testCreateWithInvalidToken() {
-        IllegalAccessException exception = assertThrows(IllegalAccessException.class, () -> {
-            subscriptionController.create("invalid_token", subscriptionDTO);
-        });
+        IllegalAccessException exception = assertThrows(IllegalAccessException.class,
+                () -> subscriptionController.create(invalidToken, subscriptionDTO));
         assertEquals("You have no permission.", exception.getMessage());
     }
 }

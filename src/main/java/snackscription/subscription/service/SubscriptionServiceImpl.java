@@ -22,7 +22,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    @Async
+    @Async("asyncExecutor")
     public CompletableFuture<Subscription> save(SubscriptionDTO subscriptionDTO) {
         try{
             Subscription subscription = DTOMapper.convertDTOtoModel(subscriptionDTO);
@@ -33,7 +33,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    @Async
+    @Async("asyncExecutor")
     public CompletableFuture<List<SubscriptionDTO>> findAll() {
         List<Subscription> subscriptions = subscriptionRepository.findAll();
         List<SubscriptionDTO> dtos = subscriptions.stream()
@@ -42,7 +42,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         return CompletableFuture.completedFuture(dtos);
     }
     @Override
-    @Async
+    @Async("asyncExecutor")
     public CompletableFuture<Optional<SubscriptionDTO>> findById(String id) {
         if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty");
@@ -53,7 +53,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    @Async
+    @Async("asyncExecutor")
+    public CompletableFuture<List<SubscriptionDTO>> findByUser(String userId){
+        List<Subscription> subscriptions = subscriptionRepository.findByUser(userId);
+        List<SubscriptionDTO> dtos = subscriptions.stream()
+                .map(DTOMapper::convertModelToDto)
+                .toList();
+        return CompletableFuture.completedFuture(dtos);
+    }
+
+    @Override
+    @Async("asyncExecutor")
     public CompletableFuture<Subscription> update(SubscriptionDTO subscriptionDTO) {
         if (subscriptionDTO == null) {
             throw new IllegalArgumentException("Subscription cannot be null");
@@ -68,7 +78,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    @Async
+    @Async("asyncExecutor")
     public CompletableFuture<Void> delete(String id) {
         if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("ID cannot be null or empty");

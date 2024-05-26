@@ -110,4 +110,23 @@ class SubscriptionRepositoryTest {
         verify(entityManager, times(1)).find(Subscription.class, "1");
         verify(entityManager, never()).remove(any());
     }
+
+    @Test
+    void testFindByUser() {
+        String userId = "user123";
+        Subscription subscription1 = subscriptionFactory.create();
+        Subscription subscription2 = subscriptionFactory.create();
+
+        TypedQuery<Subscription> query = mock(TypedQuery.class);
+        when(entityManager.createQuery("SELECT s FROM Subscription s WHERE s.userId = :userId", Subscription.class)).thenReturn(query);
+        when(query.setParameter("userId", userId)).thenReturn(query);
+        when(query.getResultList()).thenReturn(Arrays.asList(subscription1, subscription2));
+
+        List<Subscription> subscriptions = subscriptionRepository.findByUser(userId);
+
+        assertEquals(2, subscriptions.size());
+        verify(entityManager, times(1)).createQuery("SELECT s FROM Subscription s WHERE s.userId = :userId", Subscription.class);
+        verify(query, times(1)).setParameter("userId", userId);
+        verify(query, times(1)).getResultList();
+    }
 }
